@@ -10,6 +10,7 @@ import net.minecraft.client.gui.screen.ingame.GameMenuScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public final class HorusClient implements ClientModInitializer {
@@ -18,11 +19,12 @@ public final class HorusClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(MOD_ID, "controls"));
         openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.horus.open_menu",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_RIGHT_SHIFT,
-                "category.horus.controls"
+                category
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -33,7 +35,6 @@ public final class HorusClient implements ClientModInitializer {
             }
         });
 
-        // The pause-menu entry provides a touch-friendly way to open settings on phones.
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof GameMenuScreen) {
                 screen.addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(
@@ -55,7 +56,7 @@ public final class HorusClient implements ClientModInitializer {
         int y = 12;
         int width = 154;
         int height = HorusScreen.areStatusIndicatorsEnabled() ? 48 : 34;
-        int accent = HorusScreen.isAccentEnabled() ? 0xFF9B7BFF : 0xFF61D8C8;
+        int accent = HorusScreen.isAccentEnabled() ? 0xFFAA8BFF : 0xFF62E0D0;
 
         context.fill(x, y, x + width, y + height, 0xD9141723);
         context.fill(x, y, x + 3, y + height, accent);
@@ -64,7 +65,7 @@ public final class HorusClient implements ClientModInitializer {
         context.drawTextWithShadow(client.textRenderer, Text.literal("A calm view of your world"), x + 11, y + 20, 0xFFE1E5F0);
 
         if (HorusScreen.areStatusIndicatorsEnabled()) {
-            context.drawTextWithShadow(client.textRenderer, Text.literal("PROFILE  •  AURORA"), x + 11, y + 34, 0xFF9AA5BA);
+            context.drawTextWithShadow(client.textRenderer, Text.literal("PROFILE  •  AURORA"), x + 11, y + 34, 0xFF9BAAC2);
         }
     }
 }
