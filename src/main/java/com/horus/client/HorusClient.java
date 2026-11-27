@@ -19,7 +19,9 @@ public final class HorusClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        KeyBinding.Category category = KeyBinding.Category.create(Identifier.of(MOD_ID, "controls"));
+        KeyBinding.Category category =
+                KeyBinding.Category.create(Identifier.of(MOD_ID, "controls"));
+
         openMenuKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.horus.open_menu",
                 InputUtil.Type.KEYSYM,
@@ -35,23 +37,39 @@ public final class HorusClient implements ClientModInitializer {
             }
         });
 
-        // Keep the entry large and near the screen edge for touch use in mobile launchers.
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof GameMenuScreen) {
                 int buttonWidth = Math.min(148, Math.max(112, scaledWidth - 16));
                 int buttonX = Math.max(8, scaledWidth - buttonWidth - 8);
-                screen.addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(
-                                Text.literal("Horus Visuals"), button -> client.setScreen(new HorusScreen()))
-                        .dimensions(buttonX, Math.max(8, scaledHeight - 34), buttonWidth, 28)
-                        .build());
+
+                screen.addDrawableChild(
+                        net.minecraft.client.gui.widget.ButtonWidget.builder(
+                                Text.literal("Horus Visuals"),
+                                button -> client.setScreen(new HorusScreen())
+                        )
+                        .dimensions(
+                                buttonX,
+                                Math.max(8, scaledHeight - 34),
+                                buttonWidth,
+                                28
+                        )
+                        .build()
+                );
             }
         });
 
-        HudRenderCallback.EVENT.register((drawContext, tickCounter) -> renderHud(MinecraftClient.getInstance(), drawContext));
+        HudRenderCallback.EVENT.register((drawContext, tickCounter) ->
+                renderHud(MinecraftClient.getInstance(), drawContext)
+        );
     }
 
-    private static void renderHud(MinecraftClient client, net.minecraft.client.gui.DrawContext context) {
-        if (client.player == null || client.options.hudHidden || !HorusScreen.isHudEnabled()) {
+    private static void renderHud(
+            MinecraftClient client,
+            net.minecraft.client.gui.DrawContext context
+    ) {
+        if (client.player == null
+                || client.options.hudHidden
+                || !HorusScreen.isHudEnabled()) {
             return;
         }
 
@@ -59,16 +77,59 @@ public final class HorusClient implements ClientModInitializer {
         int y = 12;
         int width = 154;
         int height = HorusScreen.areStatusIndicatorsEnabled() ? 48 : 34;
-        int accent = HorusScreen.isAccentEnabled() ? 0xFFAA8BFF : 0xFF62E0D0;
 
-        context.fill(x, y, x + width, y + height, 0xD9141723);
-        context.fill(x, y, x + 3, y + height, accent);
-        context.fill(x + 3, y, x + width, y + 1, 0x553FFFFFF);
-        context.drawTextWithShadow(client.textRenderer, Text.literal("HORUS  /  VISUALS"), x + 11, y + 7, accent);
-        context.drawTextWithShadow(client.textRenderer, Text.literal("A calm view of your world"), x + 11, y + 20, 0xFFE1E5F0);
+        int accent = HorusScreen.isAccentEnabled()
+                ? 0xFFAA8BFF
+                : 0xFF62E0D0;
+
+        context.fill(
+                x,
+                y,
+                x + width,
+                y + height,
+                0xD9141723
+        );
+
+        context.fill(
+                x,
+                y,
+                x + 3,
+                y + height,
+                accent
+        );
+
+        context.fill(
+                x + 3,
+                y,
+                x + width,
+                y + 1,
+                0x55FFFFFF
+        );
+
+        context.drawTextWithShadow(
+                client.textRenderer,
+                Text.literal("HORUS  /  VISUALS"),
+                x + 11,
+                y + 7,
+                accent
+        );
+
+        context.drawTextWithShadow(
+                client.textRenderer,
+                Text.literal("A calm view of your world"),
+                x + 11,
+                y + 20,
+                0xFFE1E5F0
+        );
 
         if (HorusScreen.areStatusIndicatorsEnabled()) {
-            context.drawTextWithShadow(client.textRenderer, Text.literal("PROFILE  •  AURORA"), x + 11, y + 34, 0xFF9BAAC2);
+            context.drawTextWithShadow(
+                    client.textRenderer,
+                    Text.literal("PROFILE  •  AURORA"),
+                    x + 11,
+                    y + 34,
+                    0xFF9BAAC2
+            );
         }
     }
 }
