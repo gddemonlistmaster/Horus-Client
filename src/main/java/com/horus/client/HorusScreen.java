@@ -4,12 +4,15 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.Vec3d;
 
-/** A touch-friendly, responsive dashboard for mobile and desktop clients. */
+/** A polished, touch-friendly control panel for Horus visual options. */
 public final class HorusScreen extends Screen {
     private static boolean hudEnabled = true;
+    private static boolean skyEnabled = false;
     private static boolean accentEnabled = true;
     private static boolean statusIndicatorsEnabled = true;
+    private static SkyPalette skyPalette = SkyPalette.AURORA;
 
     private static final int BACKDROP = 0xE9090D18;
     private static final int PANEL = 0xFF111827;
@@ -23,9 +26,29 @@ public final class HorusScreen extends Screen {
     private int panelY;
     private int panelWidth;
     private int panelHeight;
-    private int rowHeight;
-    private int rowStartY;
-    private int toggleWidth;
+    private int buttonY;
+    private int buttonWidth;
+    private int buttonHeight;
+
+    private enum SkyPalette {
+        AURORA("Aurora", 0xFF6978C8),
+        SUNSET("Sunset", 0xFFE58B78),
+        OCEAN("Ocean", 0xFF4F9DB6),
+        DREAM("Dream", 0xFFAA78C8);
+
+        private final String label;
+        private final int color;
+
+        SkyPalette(String label, int color) {
+            this.label = label;
+            this.color = color;
+        }
+
+        private SkyPalette next() {
+            SkyPalette[] values = values();
+            return values[(ordinal() + 1) % values.length];
+        }
+    }
 
     public HorusScreen() {
         super(Text.literal("Horus Visuals"));
@@ -43,39 +66,64 @@ public final class HorusScreen extends Screen {
         return statusIndicatorsEnabled;
     }
 
+    /** Returns the selected client-side sky tint, or the vanilla color if disabled. */
+    public static Vec3d applySkyPalette(Vec3d vanillaColor) {
+        if (!skyEnabled || vanillaColor == null) {
+            return vanillaColor;
+        }
+
+        int color = skyPalette.color;
+        return new Vec3d(
+                ((color >> 16) & 0xFF) / 255.0,
+                ((color >> 8) & 0xFF) / 255.0,
+                (color & 0xFF) / 255.0
+        );
+    }
+
     @Override
     protected void init() {
-        panelWidth = Math.max(0, Math.min(560, width - 24));
-        panelHeight = Math.max(0, Math.min(440, height - 24));
+        panelWidth = Math.max(0, Math.min(560, width - 20));
+        panelHeight = Math.max(0, Math.min(460, height - 20));
         panelX = (width - panelWidth) / 2;
         panelY = (height - panelHeight) / 2;
-        rowHeight = Math.max(34, Math.min(48, (panelHeight - 198) / 3));
-        rowStartY = panelY + panelHeight - (rowHeight * 3) - 72;
-        toggleWidth = Math.min(118, Math.max(74, panelWidth / 3));
+        buttonWidth = Math.max(90, Math.min(224, (panelWidth - 54) / 2));
+        buttonHeight = 36;
+        buttonY = panelY + Math.min(230, Math.max(178, panelHeight / 2));
 
-        int toggleX = panelX + panelWidth - toggleWidth - 20;
-        addDrawableChild(ButtonWidget.builder(toggleText("Aurora HUD", hudEnabled), button -> {
-                    hudEnabled = !hudEnabled;
-                    button.setMessage(toggleText("Aurora HUD", hudEnabled));
+        int leftX = panelX + 20;
+        int rightX = panelX + panelWidth - buttonWidth - 20;
+        int gap = 9;
+
+        addDrawableChild(toggleButton("HUD panel", hudEnabled, leftX, buttonY, () -> hudEnabled = !hudEnabled));
+        addDrawableChild(toggleButton("Custom sky", skyEnabled, rightX, buttonY, () -> skyEnabled = !skyEnabled));
+        addDrawableChild(ButtonWidget.builder(skyPaletteText(), button -> {
+                    skyPalette = skyPalette.next();
+                    button.setMessage(skyPaletteText());
                 })
-                .dimensions(toggleX, rowStartY, toggleWidth, rowHeight)
+                .dimensions(leftX, buttonY + buttonHeight + gap, buttonWidth, buttonHeight)
                 .build());
-        addDrawableChild(ButtonWidget.builder(toggleText("Accent", accentEnabled), button -> {
-                    accentEnabled = !accentEnabled;
-                    button.setMessage(toggleText("Accent", accentEnabled));
+        addDrawableChild(toggleButton("Accent theme", accentEnabled, rightX,
+                buttonY + buttonHeight + gap, () -> accentEnabled = !accentEnabled));
+        addDrawableChild(toggleButton("Profile label", statusIndicatorsEnabled, leftX,
+                buttonY + (buttonHeight + gap) * 2, () -> statusIndicatorsEnabled = !statusIndicatorsEnabled));
+    }
+
+    private ButtonWidget toggleButton(String label, boolean enabled, int x, int y, Runnable toggle) {
+        ButtonWidget button = ButtonWidget.builder(toggleText(label, enabled), clicked -> {
+                    toggle.run();
+                    clicked.setMessage(toggleText(label, !enabled));
                 })
-                .dimensions(toggleX, rowStartY + rowHeight + 6, toggleWidth, rowHeight)
-                .build());
-        addDrawableChild(ButtonWidget.builder(toggleText("Profile", statusIndicatorsEnabled), button -> {
-                    statusIndicatorsEnabled = !statusIndicatorsEnabled;
-                    button.setMessage(toggleText("Profile", statusIndicatorsEnabled));
-                })
-                .dimensions(toggleX, rowStartY + (rowHeight + 6) * 2, toggleWidth, rowHeight)
-                .build());
+                .dimensions(x, y, buttonWidth, buttonHeight)
+                .build();
+        return button;
     }
 
     private static Text toggleText(String label, boolean enabled) {
-        return Text.literal(label + (enabled ? "  ON" : "  OFF"));
+        return Text.literal(label + "  " + (enabled ? "ON" : "OFF"));
+    }
+
+    private static Text skyPaletteText() {
+        return Text.literal("Sky style  ·  " + skyPalette.label);
     }
 
     @Override
@@ -88,13 +136,12 @@ public final class HorusScreen extends Screen {
         context.fill(0, 0, width, height, BACKDROP);
         drawBackdrop(context);
 
-        context.fill(panelX + 4, panelY + 6, panelX + panelWidth + 4, panelY + panelHeight + 6, 0x70000000);
+        context.fill(panelX + 5, panelY + 7, panelX + panelWidth + 5, panelY + panelHeight + 7, 0x70000000);
         context.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, PANEL);
-        context.fill(panelX, panelY, panelX + panelWidth, panelY + 2, accent());
-
+        context.fill(panelX, panelY, panelX + panelWidth, panelY + 3, accent());
         drawHeader(context);
         drawPreview(context);
-        drawOptions(context);
+        drawSectionLabel(context);
         drawFooter(context);
         super.render(context, mouseX, mouseY, delta);
     }
@@ -102,7 +149,7 @@ public final class HorusScreen extends Screen {
     private void drawBackdrop(DrawContext context) {
         int glowWidth = Math.max(1, width / 3);
         context.fillGradient(width / 2 - glowWidth, 0, width / 2 + glowWidth, height,
-                0x183D2D72, 0x00202B46);
+                0x263D2D72, 0x00202B46);
         for (int x = 20; x < width; x += 48) {
             for (int y = 18; y < height; y += 48) {
                 context.fill(x, y, x + 1, y + 1, 0x334A5A79);
@@ -111,50 +158,45 @@ public final class HorusScreen extends Screen {
     }
 
     private void drawHeader(DrawContext context) {
-        int x = panelX + 20;
+        int x = panelX + 22;
         int y = panelY + 18;
-        context.fill(x, y + 2, x + 34, y + 36, 0xFF252342);
-        context.fill(x, y + 2, x + 3, y + 36, accent());
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal("H"), x + 18, y + 12, accent());
-        context.drawTextWithShadow(textRenderer, Text.literal("HORUS"), x + 46, y + 2, WHITE);
-        context.drawTextWithShadow(textRenderer, Text.literal("VISUAL CONTROL CENTER"), x + 46, y + 17, MUTED);
-        context.fill(panelX + 18, panelY + 64, panelX + panelWidth - 18, panelY + 65, 0xFF283247);
+        context.fill(x, y + 2, x + 38, y + 40, 0xFF252342);
+        context.fill(x, y + 2, x + 3, y + 40, accent());
+        context.drawCenteredTextWithShadow(textRenderer, Text.literal("H"), x + 20, y + 13, accent());
+        context.drawTextWithShadow(textRenderer, Text.literal("HORUS"), x + 50, y + 4, WHITE);
+        context.drawTextWithShadow(textRenderer, Text.literal("VISUAL CONTROL CENTER"), x + 50, y + 20, MUTED);
+        context.drawTextWithShadow(textRenderer, Text.literal("A softer, more personal view of your world"),
+                x, y + 51, MUTED);
+        context.fill(panelX + 20, panelY + 82, panelX + panelWidth - 20, panelY + 83, 0xFF283247);
     }
 
     private void drawPreview(DrawContext context) {
-        int x = panelX + 18;
-        int y = panelY + 76;
-        int w = panelWidth - 36;
-        int previewHeight = Math.max(62, Math.min(82, rowStartY - y - 54));
-        context.fill(x, y, x + w, y + previewHeight, PANEL_LIGHT);
-        context.fill(x, y, x + 3, y + previewHeight, accent());
-        context.drawTextWithShadow(textRenderer, Text.literal("LIVE HUD PREVIEW"), x + 12, y + 8, MUTED);
-        context.fill(x + 12, y + 25, x + w - 12, y + previewHeight - 8, 0xD9141723);
-        context.fill(x + 12, y + 25, x + 15, y + previewHeight - 8, accent());
-        context.drawTextWithShadow(textRenderer, Text.literal("HORUS  /  VISUALS"), x + 23, y + 30, accent());
-        context.drawTextWithShadow(textRenderer, Text.literal("A calm view of your world"), x + 23, y + 44, 0xFFE1E5F0);
+        int x = panelX + 20;
+        int y = panelY + 96;
+        int w = Math.max(0, panelWidth - 40);
+        int h = Math.max(54, Math.min(72, buttonY - y - 45));
+        context.fill(x, y, x + w, y + h, PANEL_LIGHT);
+        context.fill(x, y, x + 3, y + h, accent());
+        context.drawTextWithShadow(textRenderer, Text.literal("LIVE PREVIEW"), x + 12, y + 8, MUTED);
+        int sky = skyPalette.color;
+        context.fill(x + 12, y + 25, x + w - 12, y + h - 8, skyEnabled ? sky : 0xFF26364B);
+        context.fill(x + 12, y + h - 19, x + w - 12, y + h - 8, 0xFF182235);
+        context.drawTextWithShadow(textRenderer, Text.literal("HORUS  /  " + skyPalette.label.toUpperCase()),
+                x + 20, y + 31, WHITE);
     }
 
-    private void drawOptions(DrawContext context) {
-        int labelX = panelX + 22;
-        context.drawTextWithShadow(textRenderer, Text.literal("PERSONALIZE"), labelX, rowStartY - 19, WHITE);
-        drawOptionLabel(context, labelX, rowStartY, "Aurora HUD", "Floating visual panel");
-        drawOptionLabel(context, labelX, rowStartY + rowHeight + 6, "Accent color", "Violet / teal theme");
-        drawOptionLabel(context, labelX, rowStartY + (rowHeight + 6) * 2, "Profile indicator", "Aurora profile label");
-    }
-
-    private void drawOptionLabel(DrawContext context, int x, int y, String title, String subtitle) {
-        int availableWidth = Math.max(40, panelWidth - toggleWidth - 64);
-        context.drawTextWithShadow(textRenderer, Text.literal(title), x, y + 6, WHITE);
-        if (availableWidth > 100) {
-            context.drawTextWithShadow(textRenderer, Text.literal(subtitle), x, y + 21, MUTED);
-        }
+    private void drawSectionLabel(DrawContext context) {
+        context.drawTextWithShadow(textRenderer, Text.literal("VISUAL MODULES"),
+                panelX + 22, buttonY - 19, WHITE);
+        context.drawTextWithShadow(textRenderer, Text.literal("Customize the look without changing gameplay"),
+                panelX + 22, buttonY - 7, MUTED);
     }
 
     private void drawFooter(DrawContext context) {
-        int y = panelY + panelHeight - 25;
-        context.fill(panelX + 18, y - 8, panelX + panelWidth - 18, y - 7, 0xFF283247);
-        context.drawTextWithShadow(textRenderer, Text.literal("TOUCH: OPEN FROM PAUSE MENU"), panelX + 20, y, MUTED);
+        int y = panelY + panelHeight - 22;
+        context.fill(panelX + 20, y - 8, panelX + panelWidth - 20, y - 7, 0xFF283247);
+        context.drawTextWithShadow(textRenderer, Text.literal("RIGHT SHIFT  ·  ESC TO CLOSE"),
+                panelX + 22, y, MUTED);
     }
 
     private int accent() {
