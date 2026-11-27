@@ -35,11 +35,14 @@ public final class HorusClient implements ClientModInitializer {
             }
         });
 
+        // Keep the entry large and near the screen edge for touch use in mobile launchers.
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof GameMenuScreen) {
+                int buttonWidth = Math.min(148, Math.max(112, scaledWidth - 16));
+                int buttonX = Math.max(8, scaledWidth - buttonWidth - 8);
                 screen.addDrawableChild(net.minecraft.client.gui.widget.ButtonWidget.builder(
                                 Text.literal("Horus Visuals"), button -> client.setScreen(new HorusScreen()))
-                        .dimensions(scaledWidth - 108, scaledHeight - 30, 100, 20)
+                        .dimensions(buttonX, Math.max(8, scaledHeight - 34), buttonWidth, 28)
                         .build());
             }
         });
