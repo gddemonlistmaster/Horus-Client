@@ -2,12 +2,13 @@
 
 A client-side Fabric visual dashboard and customizable HUD for Minecraft Java Edition **1.21.11**, with larger touch controls for Android launchers such as Mojo.
 
-## Mobile-friendly controls
+## Visual options
 
-- Open the pause menu and tap the large **Horus Visuals** button; a keyboard is not required.
-- Tap the large **ON/OFF** controls to toggle the HUD, accent theme, and profile indicator.
-- The **Right Shift** key binding remains available when a keyboard is connected.
-- The mod is client-only and does not change server gameplay.
+- Open the pause menu and tap **Horus Visuals**, or press **Right Shift**.
+- Toggle the lightweight HUD, accent theme, and profile label.
+- Enable a client-side custom sky tint and cycle through **Aurora**, **Sunset**, **Ocean**, and **Dream** palettes.
+- The sky tint changes the sky color only; vanilla sun, moon, clouds, and weather rendering remain in place.
+- These options are cosmetic and do not change server gameplay.
 
 ## Build
 
@@ -21,9 +22,9 @@ The mod jar is created in `build/libs/`.
 
 ## Install in Mojo Launcher
 
-1. In Mojo, create or select a **Minecraft Java 1.21.11** instance that has **Fabric Loader** installed. The launcher must support this Minecraft version and Fabric; available options can differ by Mojo release.
+1. In Mojo, create or select a **Minecraft Java 1.21.11** instance that has **Fabric Loader** installed.
 2. Install a Fabric API version marked for Minecraft 1.21.11 in the same instance.
-3. Copy the built Horus `.jar` and Fabric API `.jar` into that instance's `mods` folder. Use Mojo's instance-management option to open the game directory if available.
+3. Copy the built Horus `.jar` and Fabric API `.jar` into that instance's `mods` folder.
 4. Launch the Fabric instance, enter a world, open the pause menu, and tap **Horus Visuals**.
 
-If Mojo does not offer Fabric for 1.21.11, the mod cannot run in that instance until the launcher supports that loader/version combination. Android performance and compatibility depend on the device, Java runtime, and Mojo version; mobile support is not guaranteed by the mod alone. Check Mojo's crash log if the game fails to launch.
+If Mojo does not offer Fabric for 1.21.11, the mod cannot run in that instance until the launcher supports that loader/version combination.
