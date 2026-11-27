@@ -4,7 +4,6 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
-import org.lwjgl.glfw.GLFW;
 
 /** A touch-friendly, responsive dashboard for mobile and desktop clients. */
 public final class HorusScreen extends Screen {
@@ -160,14 +159,5 @@ public final class HorusScreen extends Screen {
 
     private int accent() {
         return accentEnabled ? VIOLET : TEAL;
-    }
-
-    @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            close();
-            return true;
-        }
-        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }
