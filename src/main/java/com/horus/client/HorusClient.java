@@ -1,12 +1,14 @@
 package com.horus.client;
 
+import com.horus.client.mixin.ScreenAccessor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.GameMenuScreen;
+import net.minecraft.client.gui.screen.GameMenuScreen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.Text;
@@ -42,19 +44,13 @@ public final class HorusClient implements ClientModInitializer {
                 int buttonWidth = Math.min(148, Math.max(112, scaledWidth - 16));
                 int buttonX = Math.max(8, scaledWidth - buttonWidth - 8);
 
-                screen.addDrawableChild(
-                        net.minecraft.client.gui.widget.ButtonWidget.builder(
-                                Text.literal("Horus Visuals"),
-                                button -> client.setScreen(new HorusScreen())
-                        )
-                        .dimensions(
-                                buttonX,
-                                Math.max(8, scaledHeight - 34),
-                                buttonWidth,
-                                28
-                        )
-                        .build()
-                );
+                ButtonWidget button = ButtonWidget.builder(
+                        Text.literal("Horus Visuals"),
+                        pressed -> client.setScreen(new HorusScreen())
+                ).dimensions(buttonX, Math.max(8, scaledHeight - 38),
+                        buttonWidth, 30).build();
+
+                ((ScreenAccessor) screen).horus$addDrawableChild(button);
             }
         });
 
@@ -77,58 +73,29 @@ public final class HorusClient implements ClientModInitializer {
         int y = 12;
         int width = 154;
         int height = HorusScreen.areStatusIndicatorsEnabled() ? 48 : 34;
-
         int accent = HorusScreen.isAccentEnabled()
                 ? 0xFFAA8BFF
                 : 0xFF62E0D0;
 
-        context.fill(
-                x,
-                y,
-                x + width,
-                y + height,
-                0xD9141723
-        );
-
-        context.fill(
-                x,
-                y,
-                x + 3,
-                y + height,
-                accent
-        );
-
-        context.fill(
-                x + 3,
-                y,
-                x + width,
-                y + 1,
-                0x55FFFFFF
-        );
-
+        context.fill(x, y, x + width, y + height, 0xD9141723);
+        context.fill(x, y, x + 3, y + height, accent);
+        context.fill(x + 3, y, x + width, y + 1, 0x55FFFFFF);
         context.drawTextWithShadow(
                 client.textRenderer,
                 Text.literal("HORUS  /  VISUALS"),
-                x + 11,
-                y + 7,
-                accent
+                x + 11, y + 7, accent
         );
-
         context.drawTextWithShadow(
                 client.textRenderer,
                 Text.literal("A calm view of your world"),
-                x + 11,
-                y + 20,
-                0xFFE1E5F0
+                x + 11, y + 20, 0xFFE1E5F0
         );
 
         if (HorusScreen.areStatusIndicatorsEnabled()) {
             context.drawTextWithShadow(
                     client.textRenderer,
                     Text.literal("PROFILE  •  AURORA"),
-                    x + 11,
-                    y + 34,
-                    0xFF9BAAC2
+                    x + 11, y + 34, 0xFF9BAAC2
             );
         }
     }
